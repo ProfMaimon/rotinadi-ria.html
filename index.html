@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Diária Interativa - Renan Rabetine</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --primary-light: #6b8cb5;
+            --primary-dark: #345682;
+            --secondary: #6c757d;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #47a76a;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --border-radius: 0.5rem;
+            --shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #eee;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+        }
+        
+        h3 {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            background-color: #e9ecef;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover {
+            background-color: #dde2e6;
+        }
+        
+        .tab-button.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .weekday-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .weekday-tab {
+            flex: 1;
+            min-width: 100px;
+            background-color: #e9ecef;
+            border: none;
+            padding: 0.5rem 0;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .weekday-tab:hover {
+            background-color: #dde2e6;
+        }
+        
+        .weekday-tab.active {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        
+        .weekday-content {
+            display: none;
+        }
+        
+        .weekday-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .hour-grid {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .time-slot {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            text-align: center;
+            height: 100px;
+        }
+        
+        .activity-slot {
+            background-color: var(--light);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            min-height: 100px;
+            height: 100%;
+            position: relative;
+        }
+        
+        .activity-input {
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            resize: none;
+            font-family: inherit;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .activity-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+        }
+        
+        .save-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+        }
+        
+        .save-btn:hover {
+            background-color: #3a8d58;
+        }
+        
+        .reset-btn {
+            background-color: var(--warning);
+            color: #333;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+        }
+        
+        .reset-btn:hover {
+            background-color: #e0a800;
+        }
+        
+        .delete-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .template-container {
+            margin-top: 20px;
+            background-color: var(--light);
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .template-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .template-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .template-description {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        
+        .collapsible {
+            background-color: var(--light);
+            color: var(--dark);
+            cursor: pointer;
+            padding: 1rem;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible:hover {
+            background-color: #e9ecef;
+        }
+        
+        .collapsible:after {
+            content: '+';
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .collapsible.active:after {
+            content: '−';
+        }
+        
+        .content {
+            padding: 0 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: white;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            margin-bottom: 1rem;
+        }
+        
+        .principles {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: 2rem;
+        }
+        
+        .principles-list {
+            list-style-type: none;
+        }
+        
+        .principles-list li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .principles-list .emoji {
+            flex: 0 0 30px;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .emoji {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .buttons-container button {
+            flex: 1;
+        }
+        
+        .template-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .apply-template {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+        
+        .apply-template:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: var(--success);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .custom-template-form {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .hour-grid {
+                grid-template-columns: 60px 1fr;
+            }
+            
+            .time-slot {
+                font-size: 0.9rem;
+                padding: 5px;
+            }
+            
+            .weekday-tab {
+                padding: 0.4rem 0.2rem;
+                font-size: 0.9rem;
+                min-width: 70px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗓️ Agenda Diária Interativa - Renan Rabetine</h1>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'agenda')">Agenda Diária</button>
+            <button class="tab-button" onclick="openTab(event, 'templates')">Templates</button>
+            <button class="tab-button" onclick="openTab(event, 'principios')">Princípios</button>
+        </div>
+
+        <div id="agenda" class="tab-content active">
+            <h2>📅 Agenda Semanal</h2>
+            
+            <div class="weekday-tabs">
+                <button class="weekday-tab active" onclick="openWeekday(event, 'segunda')">Segunda</button>
+                <button class="weekday-tab" onclick="openWeekday(event, 'terca')">Terça</button>
+                <button class="weekday-tab" onclick="openWeekday(event, 'quarta')">Quarta</button>
+                <button class="weekday-tab" onclick="openWeekday(event, 'quinta')">Quinta</button>
+                <button class="weekday-tab" onclick="openWeekday(event, 'sexta')">Sexta</button>
+                <button class="weekday-tab" onclick="openWeekday(event, 'sabado')">Sábado</button>
+                <button class="weekday-tab" onclick="openWeekday(event, 'domingo')">Domingo</button>
+            </div>
+            
+            <div id="segunda" class="weekday-content active">
+                <div class="hour-grid" id="segunda-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div id="terca" class="weekday-content">
+                <div class="hour-grid" id="terca-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div id="quarta" class="weekday-content">
+                <div class="hour-grid" id="quarta-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div id="quinta" class="weekday-content">
+                <div class="hour-grid" id="quinta-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div id="sexta" class="weekday-content">
+                <div class="hour-grid" id="sexta-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div id="sabado" class="weekday-content">
+                <div class="hour-grid" id="sabado-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div id="domingo" class="weekday-content">
+                <div class="hour-grid" id="domingo-grid">
+                    <!-- Hours will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div class="buttons-container">
+                <button class="save-btn" onclick="saveSchedule()">Salvar Agenda</button>
+                <button class="reset-btn" onclick="resetDay()">Limpar Dia Atual</button>
+                <button class="delete-btn" onclick="resetAllDays()">Limpar Toda a Semana</button>
+            </div>
+        </div>
+
+        <div id="templates" class="tab-content">
+            <h2>📋 Templates de Rotina</h2>
+            
+            <div class="template-container">
+                <h3>Templates Diários</h3>
+                <div class="template-grid">
+                    <div class="template-card" id="template-segunda">
+                        <div class="template-title">Segunda — Social Media & Study Day</div>
+                        <div class="template-description">Foco em redes sociais, estudo e musculação</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('segunda')">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" id="template-terca">
+                        <div class="template-title">Terça — Consultoria & Execução</div>
+                        <div class="template-description">Dia de atendimento aos clientes e execução de projetos</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('terca')">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" id="template-quarta">
+                        <div class="template-title">Quarta — Estudo & Criação</div>
+                        <div class="template-description">Foco em aprendizado e trabalho criativo</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('quarta')">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" id="template-quinta">
+                        <div class="template-title">Quinta — Consultoria & Conexão</div>
+                        <div class="template-description">Atendimento aos clientes e networking</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('quinta')">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" id="template-sexta">
+                        <div class="template-title">Sexta — Planejamento & Performance</div>
+                        <div class="template-description">Planejamento da semana seguinte e fechamento</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('sexta')">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" id="template-sabado">
+                        <div class="template-title">Sábado — Cardio & Conteúdo</div>
+                        <div class="template-description">Exercício leve e tempo para lazer</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('sabado')">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card" id="template-domingo">
+                        <div class="template-title">Domingo — Off & Recharge</div>
+                        <div class="template-description">Dia livre para descanso e recuperação</div>
+                        <div class="template-buttons">
+                            <button class="apply-template" onclick="applyTemplate('domingo')">Aplicar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="template-container">
+                <h3>Templates Personalizados</h3>
+                <p>Salve suas próprias rotinas como templates personalizados.</p>
+                <div class="template-grid" id="custom-templates">
+                    <!-- Custom templates will be added here -->
+                </div>
+                
+                <button class="collapsible" id="new-template-btn">➕ Criar Novo Template</button>
+                <div class="custom-template-form" id="new-template-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="template-name">Nome do Template:</label>
+                        <input type="text" id="template-name" placeholder="Ex: Dia de Produtividade Máxima">
+                    </div>
+                    <div class="form-group">
+                        <label for="template-description">Descrição:</label>
+                        <input type="text" id="template-description" placeholder="Ex: Foco em trabalho profundo e reuniões">
+                    </div>
+                    <div class="form-group">
+                        <label for="template-day">Aplicar a qual dia da semana?</label>
+                        <select id="template-day" class="form-control">
+                            <option value="segunda">Segunda-feira</option>
+                            <option value="terca">Terça-feira</option>
+                            <option value="quarta">Quarta-feira</option>
+                            <option value="quinta">Quinta-feira</option>
+                            <option value="sexta">Sexta-feira</option>
+                            <option value="sabado">Sábado</option>
+                            <option value="domingo">Domingo</option>
+                        </select>
+                    </div>
+                    <div class="buttons-container">
+                        <button class="save-btn" onclick="saveCustomTemplate()">Salvar Template</button>
+                        <button class="reset-btn" onclick="cancelTemplate()">Cancelar</button>
+                    </div>
+                </div>
+                
+                <div class="buttons-container">
+                    <button class="save-btn" onclick="saveCurrentAsTemplate()">Salvar Dia Atual como Template</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="principios" class="tab-content">
+            <h2>✨ Princípios Fundamentais</h2>
+            
+            <div class="principles">
+                <ul class="principles-list">
+                    <li>
+                        <span class="emoji">⏱️</span>
+                        <div>
+                            <strong>Consistência:</strong> Reforce o ritmo biológico com horários fixos.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">☀️</span>
+                        <div>
+                            <strong>Exposição à Luz:</strong> Priorize luz solar pela manhã e à tarde.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">🍴</span>
+                        <div>
+                            <strong>Horário das Refeições:</strong> Mantenha regularidade nas refeições.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">🔄</span>
+                        <div>
+                            <strong>Adaptabilidade:</strong> Use a rotina como bússola, não como prisão.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">🧘</span>
+                        <div>
+                            <strong>Atenção Plena:</strong> Traga presença aos momentos do dia, não só à meditação.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <button class="collapsible">Dicas para uma rotina eficaz</button>
+            <div class="content">
+                <ul style="padding-left: 20px; margin: 15px 0;">
+                    <li>Defina horários regulares para dormir e acordar, mesmo nos fins de semana.</li>
+                    <li>Não pule o café da manhã e mantenha intervalos regulares entre as refeições.</li>
+                    <li>Divida o dia em blocos de trabalho focado de 2-3 horas.</li>
+                    <li>Reserve tempo para atividade física pelo menos 4 vezes por semana.</li>
+                    <li>Planeje sua semana com antecedência, revisando e ajustando conforme necessário.</li>
+                    <li>Reserve momentos para desconexão digital e autocuidado.</li>
+                    <li>Avalie periodicamente sua rotina e faça ajustes quando necessário.</li>
+                </ul>
+            </div>
+            
+            <button class="collapsible">Exemplo de Rotina Ideal</button>
+            <div class="content">
+                <h3>Manhã (6h-12h)</h3>
+                <ul style="padding-left: 20px; margin: 15px 0;">
+                    <li>6:00 - Acordar e hidratação</li>
+                    <li>6:15 - Meditação ou alongamento</li>
+                    <li>6:30 - Exercício físico (musculação, cardio, yoga)</li>
+                    <li>7:30 - Café da manhã nutritivo</li>
+                    <li>8:00 - Planejamento do dia</li>
+                    <li>8:30 - Trabalho focado (tarefas mais importantes)</li>
+                </ul>
+                
+                <h3>Tarde (12h-18h)</h3>
+                <ul style="padding-left: 20px; margin: 15px 0;">
+                    <li>12:00 - Almoço saudável</li>
+                    <li>12:30 - Pausa para caminhada ou descanso</li>
+                    <li>13:30 - Trabalho ou estudo</li>
+                    <li>16:00 - Intervalo para lanche e movimento</li>
+                    <li>16:30 - Reuniões ou trabalho criativo</li>
+                </ul>
+                
+                <h3>Noite (18h-22h)</h3>
+                <ul style="padding-left: 20px; margin: 15px 0;">
+                    <li>18:30 - Jantar leve</li>
+                    <li>19:00 - Tempo livre, hobbies ou conexão social</li>
+                    <li>20:30 - Preparação para dormir (leitura, relaxamento)</li>
+                    <li>21:30 - Desligar dispositivos eletrônicos</li>
+                    <li>22:00 - Dormir</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Operação realizada com sucesso!</div>
+
+    <script>
+        // Template data
+        const templates = {
+            "segunda": {
+                "9:00": "Acordar & Hidratação 🔹 Reforce seu ritmo circadiano",
+                "10:00": "🕥 Musculação (Peito, Ombro, Tríceps) + Cardio",
+                "11:00": "🕥 Musculação (continuação)",
+                "12:00": "🍽️ Almoço & Pausa",
+                "13:00": "📱 Redes Sociais",
+                "14:00": "📱 Redes Sociais (continuação)",
+                "15:00": "📖 Estudo LLM",
+                "16:00": "📖 Estudo LLM (continuação)",
+                "17:00": "💪 Sessão extra de musculação (opcional)",
+                "18:00": "🍽️ Jantar & Relaxamento",
+                "19:00": "🧘‍♂️ Tempo Livre / Autocuidado",
+                "20:00": "🧘‍♂️ Tempo Livre / Autocuidado",
+                "21:00": "🌙 Preparação para Dormir",
+                "22:00": "🛏️ Dormir"
+            },
+            "terca": {
+                "9:00": "Acordar & Hidratação 🔹 Reforce seu ritmo circadiano",
+                "10:00": "🏋️ Musculação (Costas, Del. Post., Bíceps)",
+                "11:00": "📝 Preparação para Consultoria",
+                "12:00": "🍽️ Almoço",
+                "13:00": "💼 Consultoria",
+                "14:00": "💼 Consultoria (continuação)",
+                "15:00": "📚 Tarefas Leves ou Estudo Leve",
+                "16:00": "📚 Tarefas Leves ou Estudo Leve (continuação)",
+                "17:00": "🔁 Segunda Sessão de Consultoria (se necessário)",
+                "18:00": "🍽️ Jantar",
+                "19:00": "🧘 Tempo Livre",
+                "20:00": "🧘 Tempo Livre",
+                "21:00": "🌙 Preparação para Dormir",
+                "22:00": "🛏️ Dormir"
+            },
+            "quarta": {
+                "9:00": "Acordar & Hidratação 🔹 Reforce seu ritmo circadiano",
+                "10:00": "🏋️ Musculação (Ombro) + Cardio",
+                "11:00": "📖 Estudo LLM",
+                "12:00": "📖 Estudo LLM (continuação)",
+                "13:00": "🍽️ Almoço",
+                "14:00": "📱 Redes Sociais",
+                "15:00": "📱 Redes Sociais (continuação)",
+                "16:00": "🎨 Trabalho Criativo ou Leve",
+                "17:00": "🎨 Trabalho Criativo ou Leve (continuação)",
+                "18:00": "🍽️ Jantar",
+                "19:00": "🧘 Tempo Livre",
+                "20:00": "🧘 Tempo Livre",
+                "21:00": "🌙 Preparação para Dormir",
+                "22:00": "🛏️ Dormir"
+            },
+            "quinta": {
+                "9:00": "Acordar & Hidratação 🔹 Reforce seu ritmo circadiano",
+                "10:00": "🏋️ Musculação (Perna)",
+                "11:00": "💼 Consultoria",
+                "12:00": "💼 Consultoria (continuação)",
+                "13:00": "🍽️ Almoço",
+                "14:00": "📱 Redes Sociais",
+                "15:00": "📱 Redes Sociais (continuação)",
+                "16:00": "📚 Tempo Livre / Leitura",
+                "17:00": "📚 Tempo Livre / Leitura (continuação)",
+                "18:00": "🍽️ Jantar",
+                "19:00": "👥 Autocuidado ou Conexões Sociais",
+                "20:00": "👥 Autocuidado ou Conexões Sociais",
+                "21:00": "🌙 Preparação para Dormir",
+                "22:00": "🛏️ Dormir"
+            },
+            "sexta": {
+                "9:00": "Acordar & Hidratação 🔹 Reforce seu ritmo circadiano",
+                "10:00": "🏋️ Musculação (Braço) + Cardio",
+                "11:00": "📖 Estudo LLM",
+                "12:00": "📖 Estudo LLM (continuação)",
+                "13:00": "🍽️ Almoço",
+                "14:00": "📚 Estudo NLP",
+                "15:00": "📚 Estudo NLP (continuação)",
+                "16:00": "🗂️ Planejamento da Semana",
+                "17:00": "🍽️ Jantar",
+                "18:00": "🧘 Tempo Livre",
+                "19:00": "🧘 Tempo Livre",
+                "20:00": "🧘 Tempo Livre",
+                "21:00": "🌙 Preparação para Dormir",
+                "22:00": "🛏️ Dormir"
+            },
+            "sabado": {
+                "9:00": "Acordar & Hidratação 🔹 Reforce seu ritmo circadiano",
+                "10:00": "🏃 Cardio",
+                "11:00": "📱 Redes Sociais",
+                "12:00": "📱 Redes Sociais (continuação)",
+                "13:00": "🍽️ Almoço",
+                "14:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "15:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "16:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "17:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "18:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "19:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "20:00": "🎨 Tempo Livre / Hobbies / Descanso",
+                "21:00": "🌙 Preparação para Dormir",
+                "22:00": "🛏️ Dormir"
+            },
+            "domingo": {
+                "9:00": "Acordar & Hidratação 🔹 Manter horário consistente",
+                "10:00": "🛌 Dia Livre / Recuperação Ativa",
+                "11:00": "🛌 Dia Livre / Recuperação Ativa",
+                "12:00": "🛌 Dia Livre / Recuperação Ativa",
+                "13:00": "🍽️ Almoço em família",
+                "14:00": "📖 Leitura / Contato com amigos e família",
+                "15:00": "📖 Leitura / Contato com amigos e família",
+                "16:00": "🛌 Descanso e recuperação",
+                "17:00": "🛌 Descanso e recuperação",
+                "18:00": "🍽️ Jantar leve",
+                "19:00": "🎬 Filmes/Séries ou hobby tranquilo",
+                "20:00": "🎬 Filmes/Séries ou hobby tranquilo",
+                "21:00": "🌙 Preparação para dormir",
+                "22:00": "🛏️ Dormir"
+            }
+        };
+
+        // Custom templates storage
+        let customTemplates = JSON.parse(localStorage.getItem('customTemplates')) || [];
+        
+        // Current schedule storage
+        let currentSchedule = JSON.parse(localStorage.getItem('currentSchedule')) || {
+            segunda: {}, terca: {}, quarta: {}, quinta: {}, sexta: {}, sabado: {}, domingo: {}
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeHourGrids();
+            loadSchedule();
+            loadCustomTemplates();
+            setupCollapsibles();
+        });
+
+        // Initialize hour grids for each day of the week
+        function initializeHourGrids() {
+            const days = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"];
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            days.forEach(day => {
+                const grid = document.getElementById(`${day}-grid`);
+                grid.innerHTML = ''; // Clear existing content
+                
+                hours.forEach(hour => {
+                    // Time slot
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    timeSlot.textContent = hour;
+                    grid.appendChild(timeSlot);
+                    
+                    // Activity slot
+                    const activitySlot = document.createElement('div');
+                    activitySlot.className = 'activity-slot';
+                    
+                    const activityInput = document.createElement('textarea');
+                    activityInput.className = 'activity-input';
+                    activityInput.id = `${day}-${hour.replace(':', '')}`;
+                    activityInput.placeholder = `Digite sua atividade para ${hour}...`;
+                    
+                    activitySlot.appendChild(activityInput);
+                    grid.appendChild(activitySlot);
+                });
+            });
+        }
+
+        // Load saved schedule
+        function loadSchedule() {
+            const days = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"];
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            days.forEach(day => {
+                hours.forEach(hour => {
+                    const inputId = `${day}-${hour.replace(':', '')}`;
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement && currentSchedule[day] && currentSchedule[day][hour]) {
+                        inputElement.value = currentSchedule[day][hour];
+                    }
+                });
+            });
+        }
+
+        // Save schedule to localStorage
+        function saveSchedule() {
+            const days = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"];
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            days.forEach(day => {
+                currentSchedule[day] = {};
+                hours.forEach(hour => {
+                    const inputId = `${day}-${hour.replace(':', '')}`;
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement) {
+                        currentSchedule[day][hour] = inputElement.value;
+                    }
+                });
+            });
+            
+            localStorage.setItem('currentSchedule', JSON.stringify(currentSchedule));
+            showNotification('Agenda salva com sucesso!');
+        }
+
+        // Apply template to a day
+        function applyTemplate(day) {
+            const template = templates[day] || customTemplates.find(t => t.day === day);
+            if (!template) return;
+            
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            hours.forEach(hour => {
+                const inputId = `${day}-${hour.replace(':', '')}`;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement && template[hour]) {
+                    inputElement.value = template[hour];
+                }
+            });
+            
+            showNotification(`Template de ${day} aplicado com sucesso!`);
+        }
+
+        // Save current day as a custom template
+        function saveCurrentAsTemplate() {
+            const activeDayTab = document.querySelector('.weekday-tab.active');
+            if (!activeDayTab) return;
+            
+            const day = activeDayTab.getAttribute('onclick').match(/'([^']+)'/)[1];
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            const template = { day };
+            hours.forEach(hour => {
+                const inputId = `${day}-${hour.replace(':', '')}`;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement) {
+                    template[hour] = inputElement.value;
+                }
+            });
+            
+            // Prompt for template name and description
+            document.getElementById('new-template-form').style.display = 'block';
+            document.getElementById('new-template-btn').style.display = 'none';
+            document.getElementById('template-day').value = day;
+        }
+
+        // Save custom template
+        function saveCustomTemplate() {
+            const name = document.getElementById('template-name').value;
+            const description = document.getElementById('template-description').value;
+            const day = document.getElementById('template-day').value;
+            
+            if (!name || !description) {
+                showNotification('Por favor, preencha todos os campos', 'error');
+                return;
+            }
+            
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            const template = { id: Date.now(), name, description, day };
+            
+            hours.forEach(hour => {
+                const inputId = `${day}-${hour.replace(':', '')}`;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement) {
+                    template[hour] = inputElement.value;
+                }
+            });
+            
+            customTemplates.push(template);
+            localStorage.setItem('customTemplates', JSON.stringify(customTemplates));
+            loadCustomTemplates();
+            
+            // Reset form
+            document.getElementById('template-name').value = '';
+            document.getElementById('template-description').value = '';
+            document.getElementById('new-template-form').style.display = 'none';
+            document.getElementById('new-template-btn').style.display = 'block';
+            
+            showNotification('Template personalizado salvo com sucesso!');
+        }
+
+        // Cancel template creation
+        function cancelTemplate() {
+            document.getElementById('template-name').value = '';
+            document.getElementById('template-description').value = '';
+            document.getElementById('new-template-form').style.display = 'none';
+            document.getElementById('new-template-btn').style.display = 'block';
+        }
+
+        // Load custom templates
+        function loadCustomTemplates() {
+            const container = document.getElementById('custom-templates');
+            container.innerHTML = '';
+            
+            customTemplates.forEach(template => {
+                const card = document.createElement('div');
+                card.className = 'template-card';
+                card.id = `custom-template-${template.id}`;
+                
+                card.innerHTML = `
+                    <div class="template-title">${template.name}</div>
+                    <div class="template-description">${template.description}</div>
+                    <div class="template-buttons">
+                        <button class="apply-template" onclick="applyCustomTemplate(${template.id})">Aplicar</button>
+                        <button class="delete-btn" onclick="deleteCustomTemplate(${template.id})" style="padding: 8px 12px; margin-top: 0;">Excluir</button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Apply custom template
+        function applyCustomTemplate(id) {
+            const template = customTemplates.find(t => t.id === id);
+            if (!template) return;
+            
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            hours.forEach(hour => {
+                const inputId = `${template.day}-${hour.replace(':', '')}`;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement && template[hour]) {
+                    inputElement.value = template[hour];
+                }
+            });
+            
+            // Switch to the day tab
+            const dayTab = document.querySelector(`.weekday-tab[onclick*="${template.day}"]`);
+            if (dayTab) {
+                dayTab.click();
+            }
+            
+            showNotification(`Template "${template.name}" aplicado com sucesso!`);
+        }
+
+        // Delete custom template
+        function deleteCustomTemplate(id) {
+            if (confirm('Tem certeza que deseja excluir este template?')) {
+                customTemplates = customTemplates.filter(t => t.id !== id);
+                localStorage.setItem('customTemplates', JSON.stringify(customTemplates));
+                loadCustomTemplates();
+                showNotification('Template excluído com sucesso!');
+            }
+        }
+
+        // Reset current day
+        function resetDay() {
+            const activeDayTab = document.querySelector('.weekday-tab.active');
+            if (!activeDayTab) return;
+            
+            const day = activeDayTab.getAttribute('onclick').match(/'([^']+)'/)[1];
+            const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+            
+            hours.forEach(hour => {
+                const inputId = `${day}-${hour.replace(':', '')}`;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement) {
+                    inputElement.value = '';
+                }
+            });
+            
+            showNotification(`Dia ${day} resetado com sucesso!`);
+        }
+
+        // Reset all days
+        function resetAllDays() {
+            if (confirm('Tem certeza que deseja limpar toda a semana? Isso apagará todos os dados não salvos.')) {
+                const days = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"];
+                const hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+                
+                days.forEach(day => {
+                    hours.forEach(hour => {
+                        const inputId = `${day}-${hour.replace(':', '')}`;
+                        const inputElement = document.getElementById(inputId);
+                        if (inputElement) {
+                            inputElement.value = '';
+                        }
+                    });
+                });
+                
+                showNotification('Toda a semana foi resetada com sucesso!');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            
+            // Set color based on type
+            if (type === 'error') {
+                notification.style.backgroundColor = 'var(--danger)';
+            } else {
+                notification.style.backgroundColor = 'var(--success)';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Tab navigation
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Weekday navigation
+        function openWeekday(evt, weekdayName) {
+            const weekdayContents = document.getElementsByClassName('weekday-content');
+            for (let i = 0; i < weekdayContents.length; i++) {
+                weekdayContents[i].classList.remove('active');
+            }
+            
+            const weekdayTabs = document.getElementsByClassName('weekday-tab');
+            for (let i = 0; i < weekdayTabs.length; i++) {
+                weekdayTabs[i].classList.remove('active');
+            }
+            
+            document.getElementById(weekdayName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Setup collapsible sections
+        function setupCollapsibles() {
+            const coll = document.getElementsByClassName('collapsible');
+            for (let i = 0; i < coll.length; i++) {
+                coll[i].addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    } 
+                });
+            }
+        }
+    </script>
+</body>
+</html>
